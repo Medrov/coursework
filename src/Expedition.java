@@ -5,6 +5,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 
 
+
 public class Expedition {
     private List<PlanetarySystem> systems;
     private List<Spaceship> spaceships;
@@ -32,10 +33,5 @@ public class Expedition {
             executor.execute(spaceship);
         }
         executor.shutdown();
-        try {
-            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 }
