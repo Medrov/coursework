@@ -1,6 +1,6 @@
 abstract class AstronomicalObject {
     protected String name;
-    protected double distanceFromCenter; // in AU
+    protected double distanceFromCenter; // в а.е.
 
     public AstronomicalObject(String name, double distanceFromCenter) {
         this.name = name;
@@ -14,4 +14,10 @@ abstract class AstronomicalObject {
     public double getDistanceFromCenter() {
         return distanceFromCenter;
     }
+    public abstract boolean isStar();
+    public abstract double getSurfaceTemperature();
+    public abstract boolean hasAtmosphere();
+    public abstract boolean hasOxygen();
+    public abstract boolean hasWater();
+    public abstract boolean hasSolidSurface();
 }

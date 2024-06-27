@@ -93,6 +93,29 @@ public class GUI extends JFrame {
         setVisible(true);
     }
 
+    private void showSystemInfo() {
+        if (planetarySystems == null || planetarySystems.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No planetary systems generated yet.", "System Info", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        StringBuilder info = new StringBuilder();
+        for (PlanetarySystem system : planetarySystems) {
+            info.append(system.getName()).append(":\n");
+            for (AstronomicalObject obj : system.getObjects()) {
+                info.append("  ").append(obj.toString()).append("\n");
+            }
+            info.append("\n");
+        }
+
+        JTextArea textArea = new JTextArea(info.toString());
+        textArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(500, 400));
+
+        JOptionPane.showMessageDialog(this, scrollPane, "System Info", JOptionPane.INFORMATION_MESSAGE);
+    }
+
     private void startNewExpedition(JPanel systemsPanel) {
         planetarySystems = generatePlanetarySystems();
         expedition = new Expedition();
@@ -117,33 +140,156 @@ public class GUI extends JFrame {
     }
 
     private void showSystemDetails(PlanetarySystem system) {
-        StringBuilder details = new StringBuilder("System: " + system.getName() + "\nSize: " + system.getSize() + "\nObjects:\n");
-        system.getObjects().forEach(obj -> details.append(obj.getName()).append(" - ").append(obj.getClass().getSimpleName()).append("\n"));
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        JOptionPane.showMessageDialog(this, details.toString(), "System Details", JOptionPane.INFORMATION_MESSAGE);
+        panel.add(new JLabel("System: " + system.getName()));
+        panel.add(new JLabel("Size: " + system.getSize() + " AU"));
+        panel.add(new JLabel("Objects:"));
+
+        for (AstronomicalObject obj : system.getObjects()) {
+            JButton objButton = new JButton(obj.getName() + " - " + obj.getClass().getSimpleName());
+            objButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    showSurfaceDetails(obj);
+                }
+            });
+            panel.add(objButton);
+
+            // Если объект является планетой, добавляем информацию о её спутниках
+            if (obj instanceof Planet) {
+                Planet planet = (Planet) obj;
+                List<Moon> moons = planet.getMoons();
+                for (Moon moon : moons) {
+                    JButton moonButton = new JButton(" Moon: " + moon.getName() + " - Distance: " + moon.getDistanceFromCenter() + " AU");
+                    moonButton.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            showSurfaceDetails(moon);
+                        }
+                    });
+                    panel.add(moonButton);
+                }
+            }
+        }
+
+        JScrollPane scrollPane = new JScrollPane(panel);
+        scrollPane.setPreferredSize(new Dimension(600, 400));
+        JOptionPane.showMessageDialog(this, scrollPane, "System Details", JOptionPane.INFORMATION_MESSAGE);
     }
+
+    private void showSurfaceDetails(AstronomicalObject obj) {
+        StringBuilder details = new StringBuilder(obj.getName() + " Details:\n");
+
+        if (obj instanceof Planet) {
+            Planet planet = (Planet) obj;
+            details.append("  Surface Temperature: ").append(planet.getSurfaceTemperature()).append(" °C\n")
+                    .append("  Atmosphere: ").append(planet.hasAtmosphere() ? "Yes" : "No").append("\n")
+                    .append("  Oxygen: ").append(planet.hasOxygen() ? "Yes" : "No").append("\n")
+                    .append("  Water: ").append(planet.hasWater() ? "Yes" : "No").append("\n")
+                    .append("  Solid Surface: ").append(planet.hasSolidSurface() ? "Yes" : "No").append("\n");
+
+            // Дополнительные характеристики для пригодной планеты
+            details.append("  Ground: ").append(planet.hasGround() ? "Yes" : "No").append("\n")
+                    .append("  Average Surface Temperature: ").append(planet.getAverageSurfaceTemperature()).append(" °C\n")
+                    .append("  Oxygen Atmosphere: ").append(planet.hasOxygenAtmosphere() ? "Yes" : "No").append("\n");
+
+        } else if (obj instanceof Moon) {
+            Moon moon = (Moon) obj;
+            details.append("  Distance from Planet: ").append(moon.getDistanceFromCenter()).append(" AU\n");
+
+            // Дополнительные характеристики для спутника
+            details.append("  Surface Temperature: ").append(moon.getSurfaceTemperature()).append(" °C\n")
+                    .append("  Atmosphere: ").append(moon.hasAtmosphere() ? "Yes" : "No").append("\n")
+                    .append("  Oxygen: ").append(moon.hasOxygen() ? "Yes" : "No").append("\n")
+                    .append("  Water: ").append(moon.hasWater() ? "Yes" : "No").append("\n")
+                    .append("  Solid Surface: ").append(moon.hasSolidSurface() ? "Yes" : "No").append("\n");
+        }
+
+        JOptionPane.showMessageDialog(this, details.toString(), obj.getName() + " Surface Details", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+
 
     private List<PlanetarySystem> generatePlanetarySystems() {
         List<PlanetarySystem> systems = new ArrayList<>();
-        for (int i = 1; i <= 15; i++) {
-            PlanetarySystem system = new PlanetarySystem("System-" + i, ThreadLocalRandom.current().nextDouble(10, 100));
-            system.addObject(new Star("Star-" + i, 0));
-            for (int j = 1; j <= 5; j++) {
-                double distance = ThreadLocalRandom.current().nextDouble(1, system.getSize());
-                double temperature = ThreadLocalRandom.current().nextDouble(-100, 100);
-                boolean hasAtmosphere = ThreadLocalRandom.current().nextBoolean();
-                boolean hasOxygen = hasAtmosphere && ThreadLocalRandom.current().nextBoolean();
-                boolean hasWater = ThreadLocalRandom.current().nextBoolean();
-                boolean hasSolidSurface = ThreadLocalRandom.current().nextBoolean();
-                int numOfMoons = ThreadLocalRandom.current().nextInt(0, 6);
+        boolean allSystemsValid = false;
 
-                Planet planet = new Planet("Planet-" + i + "-" + j, distance, temperature, hasAtmosphere, hasOxygen, hasWater, hasSolidSurface, numOfMoons);
-                system.addObject(planet);
+        while (!allSystemsValid) {
+            systems.clear(); // Очищаем список систем перед генерацией новой
+
+            // Генерируем 15 планетарных систем
+            for (int i = 1; i <= 15; i++) {
+                PlanetarySystem system = new PlanetarySystem("System-" + i, ThreadLocalRandom.current().nextDouble(10, 100));
+                Star centerStar = new Star("Star-" + i, 0);
+                system.addObject(centerStar);
+
+                boolean systemValid = true; // Флаг для проверки условий компактности и колонизации
+                boolean hasHabitablePlanet = true;
+
+                // Генерируем до 4 планет в каждой системе
+                for (int j = 1; j <= 4; j++) {
+                    double distance = ThreadLocalRandom.current().nextDouble(1, system.getSize());
+                    double temperature = ThreadLocalRandom.current().nextDouble(-100, 100);
+                    boolean hasAtmosphere = ThreadLocalRandom.current().nextBoolean();
+                    boolean hasOxygen = hasAtmosphere && ThreadLocalRandom.current().nextBoolean();
+                    boolean hasWater = ThreadLocalRandom.current().nextBoolean();
+                    boolean hasSolidSurface = ThreadLocalRandom.current().nextBoolean();
+                    int numOfMoons = ThreadLocalRandom.current().nextInt(0, 6);
+
+                    // Проверяем компактность планеты
+                    if (distance < 10 || distance > 100) {
+                        systemValid = false;
+                        break; // Не добавляем планету в систему, если не удовлетворяет условию компактности
+                    }
+
+                    boolean hasGround = ThreadLocalRandom.current().nextBoolean();
+                    boolean hasLiquidWater = ThreadLocalRandom.current().nextBoolean();
+                    boolean hasOxygenAtmosphere = hasAtmosphere && ThreadLocalRandom.current().nextBoolean();
+                    double averageSurfaceTemperature = ThreadLocalRandom.current().nextDouble(0, 25);
+
+                    Planet planet = new Planet("Planet-" + i + "-" + j, distance, temperature, hasAtmosphere, hasOxygen, hasWater,
+                            hasSolidSurface, hasGround, hasLiquidWater, hasOxygenAtmosphere, averageSurfaceTemperature, numOfMoons);
+                    system.addObject(planet);
+
+                    // Добавление спутников
+                    for (int k = 1; k <= numOfMoons; k++) {
+                        double distanceMoon = ThreadLocalRandom.current().nextDouble(1, distance / 10); // Дистанция луны от планеты
+                        double temperatureMoon = ThreadLocalRandom.current().nextDouble(-10, 10);
+                        boolean hasAtmosphereMoon = ThreadLocalRandom.current().nextBoolean();
+                        boolean hasOxygenMoon = hasAtmosphereMoon && ThreadLocalRandom.current().nextBoolean();
+                        boolean hasWaterMoon = ThreadLocalRandom.current().nextBoolean();
+                        boolean hasSolidSurfaceMoon = ThreadLocalRandom.current().nextBoolean();
+                        Moon moon = new Moon("Moon-" + i + "-" + j + "-" + k, distanceMoon, temperatureMoon, hasAtmosphereMoon, hasOxygenMoon, hasWaterMoon, hasSolidSurfaceMoon);
+                        planet.addMoon(moon);
+                    }
+
+                    // Проверяем, есть ли хотя бы одна пригодная для колонизации планета
+                    if (!hasHabitablePlanet && planet.isHabitable()) {
+                        hasHabitablePlanet = true;
+                    }
+                }
+
+                // Если система удовлетворяет условиям, добавляем её в список систем
+                if (systemValid && hasHabitablePlanet) {
+                    systems.add(system);
+                } else {
+                    // Если система не удовлетворяет условиям, генерируем заново
+                    systems.clear();
+                    break;
+                }
             }
-            systems.add(system);
+
+            // Проверяем, что сгенерированы все 15 систем, удовлетворяющих условиям
+            if (systems.size() == 15) {
+                allSystemsValid = true;
+            }
         }
+
         return systems;
     }
+
 
     private void createSpaceship() {
         if (spaceships == null) {
@@ -205,27 +351,21 @@ public class GUI extends JFrame {
         planetarySystems = generatePlanetarySystems();
         planetarySystems.forEach(expedition::addSystem);
         logListModel.addElement("Program restarted.");
-        shipsPanel.revalidate();
-        shipsPanel.repaint();
-    }
-
-    private void showSystemInfo() {
-        StringBuilder info = new StringBuilder("Planetary Systems Info:\n");
-        for (PlanetarySystem system : planetarySystems) {
-            info.append(system.getName()).append(": Size = ").append(system.getSize()).append("\n");
-        }
-        JOptionPane.showMessageDialog(this, info.toString(), "System Info", JOptionPane.INFORMATION_MESSAGE);
+        revalidate();
+        repaint();
     }
 
     private void openFlightSetupDialog() {
         JDialog dialog = new JDialog(this, "Flight Setup", true);
         dialog.setLayout(new BorderLayout());
-        dialog.setSize(400, 300);
+        dialog.setSize(300, 200);
         dialog.setLocationRelativeTo(this);
 
-        JPanel panel = new JPanel(new GridLayout(4, 2)); // увеличили количество строк на 1 для кнопки прыжка
+        JPanel panel = new JPanel(new GridLayout(3, 2));
+
         JLabel shipLabel = new JLabel("Select Ship:");
         JLabel systemLabel = new JLabel("Select System:");
+
         JComboBox<String> shipComboBox = new JComboBox<>();
         JComboBox<String> systemComboBox = new JComboBox<>();
 
@@ -405,7 +545,7 @@ public class GUI extends JFrame {
             }
         });
 
-        dialog.add(panel, BorderLayout.CENTER);;
+        dialog.add(panel, BorderLayout.CENTER);
         dialog.setVisible(true);
     }
 

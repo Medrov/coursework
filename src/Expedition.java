@@ -4,8 +4,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 
-
-
 public class Expedition {
     private List<PlanetarySystem> systems;
     private List<Spaceship> spaceships;
