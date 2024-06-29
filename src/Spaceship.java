@@ -15,6 +15,7 @@ class Spaceship implements Runnable {
     private boolean isFunctional;
     private Expedition expedition;
     private PlanetarySystem currentSystem;
+    private PlanetarySystem targetSystem;
     private GUI gui;
     private String currentAction;
 
@@ -33,6 +34,7 @@ class Spaceship implements Runnable {
         this.colonized = false;
         this.isFunctional = true;
         this.currentSystem = null;
+        this.targetSystem = null;
         this.currentAction = "";
         this.installedModules = new ArrayList<>();
     }
@@ -49,6 +51,10 @@ class Spaceship implements Runnable {
         return colonized;
     }
 
+    public PlanetarySystem getTargetSystem() {
+        return targetSystem;
+    }
+
     public void setReturned(boolean hasReturned) {
         this.hasReturned = hasReturned;
     }
@@ -58,7 +64,7 @@ class Spaceship implements Runnable {
     }
 
     public void setTargetSystem(PlanetarySystem targetSystem) {
-        this.currentSystem = targetSystem;
+        this.targetSystem = targetSystem;
     }
 
     public boolean addModule(SpaceshipModule module) {
@@ -84,10 +90,9 @@ class Spaceship implements Runnable {
             checkAndRepairModules();
             // Jump to a new system
             if (remainingJumps > 0 && isFunctional) {
-                currentSystem = expedition.getRandomSystem();
                 remainingJumps--;
-                gui.appendLog("Spaceship " + id + " jumped to " + currentSystem.getName());
-                updateUI("Jumping to " + currentSystem.getName());
+                gui.appendLog("Spaceship " + id + " jumped to " + targetSystem.getName());
+                updateUI("Jumping to " + targetSystem.getName());
                 // Explore the system
                 exploreSystem();
                 if (colonized) {

@@ -120,7 +120,7 @@ public class GUI extends JFrame {
 
     private void mainStart(JButton startButton, JPanel systemsPanel) {
         if (!isStartButtonClicked) {
-            startNewExpedition(systemsPanel);
+            startNewCompanyExpedition(systemsPanel);
             isStartButtonClicked = true;
             JOptionPane.showMessageDialog(this, "The expedition has started!", "Start", JOptionPane.INFORMATION_MESSAGE);
         } else {
@@ -128,7 +128,7 @@ public class GUI extends JFrame {
         }
     }
 
-    private void startNewExpedition(JPanel systemsPanel) {
+    private void startNewCompanyExpedition(JPanel systemsPanel) {
         planetarySystems = generatePlanetarySystems();
         expedition = new Expedition();
         planetarySystems.forEach(expedition::addSystem);
@@ -146,7 +146,7 @@ public class GUI extends JFrame {
             systemsPanel.add(systemLabel);
         });
 
-        logListModel.addElement("New expedition started.");
+        logListModel.addElement("New expedition company started.");
         systemsPanel.revalidate();
         systemsPanel.repaint();
     }
@@ -221,8 +221,6 @@ public class GUI extends JFrame {
 
         JOptionPane.showMessageDialog(this, details.toString(), obj.getName() + " Surface Details", JOptionPane.INFORMATION_MESSAGE);
     }
-
-
 
     private List<PlanetarySystem> generatePlanetarySystems() {
         List<PlanetarySystem> systems = new ArrayList<>();
@@ -411,7 +409,6 @@ public class GUI extends JFrame {
         assignButton.addActionListener(e -> {
             String selectedShipId = (String) shipComboBox.getSelectedItem();
             String selectedSystemName = (String) systemComboBox.getSelectedItem();
-
             if (selectedShipId != null && selectedSystemName != null) {
                 Spaceship selectedShip = null;
                 for (Spaceship ship : spaceships) {
@@ -431,6 +428,7 @@ public class GUI extends JFrame {
 
                 if (selectedShip != null && selectedSystem != null) {
                     selectedShip.setTargetSystem(selectedSystem);
+                    System.out.println(selectedShip.getTargetSystem());
                     appendLog("Assigned " + selectedShipId + " to " + selectedSystemName);
                 }
             }
@@ -455,12 +453,14 @@ public class GUI extends JFrame {
                 for (PlanetarySystem system : planetarySystems) {
                     if (system.getName().equals(selectedSystemName)) {
                         selectedSystem = system;
+
                         break;
                     }
                 }
 
                 if (selectedShip != null && selectedSystem != null) {
                     selectedShip.jumpToSystem(selectedSystem);
+                    System.out.println(selectedShip.getTargetSystem());
                     appendLog("Spaceship " + selectedShipId + " jumped to " + selectedSystemName);
                 }
             }
@@ -471,47 +471,6 @@ public class GUI extends JFrame {
         panel.add(jumpButton);
         dialog.add(panel, BorderLayout.CENTER);
         dialog.setVisible(true);
-    }
-
-    private void createShipControlButtons(JPanel actionsPanel) {
-        JButton landButton = new JButton("Land");
-        JButton takeOffButton = new JButton("Take Off");
-        JButton jumpButton = new JButton("Jump");
-
-        landButton.addActionListener(e -> {
-            String selectedShipId = selectShip();
-            if (selectedShipId != null) {
-                Spaceship selectedShip = getSpaceshipById(selectedShipId);
-                if (selectedShip != null) {
-                    selectedShip.landOnPlanet();
-                }
-            }
-        });
-
-        takeOffButton.addActionListener(e -> {
-            String selectedShipId = selectShip();
-            if (selectedShipId != null) {
-                Spaceship selectedShip = getSpaceshipById(selectedShipId);
-                if (selectedShip != null) {
-                    selectedShip.takeOff();
-                }
-            }
-        });
-
-        jumpButton.addActionListener(e -> openFlightSetupDialog());
-
-        actionsPanel.add(landButton);
-        actionsPanel.add(takeOffButton);
-        actionsPanel.add(jumpButton);
-    }
-
-    private String selectShip() {
-        String[] shipIds = spaceships.stream().map(Spaceship::getId).toArray(String[]::new);
-        return (String) JOptionPane.showInputDialog(this, "Select Ship:", "Ship Selection", JOptionPane.QUESTION_MESSAGE, null, shipIds, shipIds[0]);
-    }
-
-    private Spaceship getSpaceshipById(String shipId) {
-        return spaceships.stream().filter(ship -> ship.getId().equals(shipId)).findFirst().orElse(null);
     }
 
     private void openSpaceshipSettingsDialog() {
@@ -525,17 +484,12 @@ public class GUI extends JFrame {
         JButton landOnPlanetButton = new JButton("Land on Planet");
         JButton takeOffButton = new JButton("Take Off");
         JComboBox<String> shipComboBox = new JComboBox<>();
-        JComboBox<String> systemComboBox = new JComboBox<>();
 
         for (Spaceship ship : spaceships) {
             shipComboBox.addItem(ship.getId());
         }
 
-        for (PlanetarySystem system : planetarySystems) {
-            systemComboBox.addItem(system.getName());
-        }
-
-        panel.add(systemComboBox);
+        panel.add(shipComboBox);
         panel.add(returnToBaseButton);
         panel.add(landOnPlanetButton);
         panel.add(takeOffButton);
@@ -545,9 +499,10 @@ public class GUI extends JFrame {
             if (selectedShipId != null) {
                 Spaceship selectedShip = findShipById(selectedShipId);
                 if (selectedShip != null) {
-                    returnToBase(selectedShip);
+                    selectedShip.returnToBase();
                 }
             }
+            dialog.dispose();
         });
 
         landOnPlanetButton.addActionListener(e -> {
@@ -555,9 +510,10 @@ public class GUI extends JFrame {
             if (selectedShipId != null) {
                 Spaceship selectedShip = findShipById(selectedShipId);
                 if (selectedShip != null) {
-                    landOnPlanet(selectedShip);
+                    selectedShip.landOnPlanet();
                 }
             }
+            dialog.dispose();
         });
 
         takeOffButton.addActionListener(e -> {
@@ -565,9 +521,10 @@ public class GUI extends JFrame {
             if (selectedShipId != null) {
                 Spaceship selectedShip = findShipById(selectedShipId);
                 if (selectedShip != null) {
-                    takeOff(selectedShip);
+                    selectedShip.takeOff();
                 }
             }
+            dialog.dispose();
         });
 
         dialog.add(panel, BorderLayout.CENTER);
@@ -581,24 +538,6 @@ public class GUI extends JFrame {
             }
         }
         return null;
-    }
-
-    private void returnToBase(Spaceship spaceship) {
-        spaceship.returnToBase();
-        appendLog(spaceship.getId() + " has returned to the base.");
-        updateShipStatus(spaceship);
-    }
-
-    private void landOnPlanet(Spaceship spaceship) {
-        spaceship.landOnPlanet();
-        appendLog(spaceship.getId() + " has landed on a planet.");
-        updateShipStatus(spaceship);
-    }
-
-    private void takeOff(Spaceship spaceship) {
-        spaceship.takeOff();
-        appendLog(spaceship.getId() + " has taken off.");
-        updateShipStatus(spaceship);
     }
 
     public static void main(String[] args) {
