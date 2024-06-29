@@ -1,6 +1,6 @@
 package Module.Scan;
 import Module.ScanningModule;
-class LargeScanningModule extends ScanningModule {
+public class LargeScanningModule extends ScanningModule {
     public LargeScanningModule() {
         super(3, 5); // 3 слота и сканирование всех характеристик
     }

@@ -2,6 +2,9 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.swing.SwingUtilities;
 import Module.*;
+import Module.Scan.LargeScanningModule;
+import Module.Scan.MediumScanningModule;
+import Module.Scan.SmallScanningModule;
 
 class Spaceship implements Runnable {
     private String id;
@@ -37,7 +40,74 @@ class Spaceship implements Runnable {
         this.targetSystem = null;
         this.currentAction = "";
         this.installedModules = new ArrayList<>();
+
+        addMandatoryModules();
     }
+
+    private static final Class<? extends SpaceshipModule>[] AVAILABLE_MODULES = new Class[] {
+            CommunicationModule.class,
+            FuelTankModule.class,
+            JumpEngineModule.class,
+            LivingModule.class,
+            ManeuverEngineModule.class,
+            RepairModule.class,
+            SolarPanelModule.class,
+            LargeScanningModule.class,
+            MediumScanningModule.class,
+            SmallScanningModule.class,
+    };
+
+    private void addMandatoryModules() {
+        List<Class<? extends SpaceshipModule>> mandatoryModules = new ArrayList<>();
+        mandatoryModules.add(LivingModule.class);
+        mandatoryModules.add(CommunicationModule.class);
+        mandatoryModules.add(SolarPanelModule.class);
+        mandatoryModules.add(FuelTankModule.class);
+        mandatoryModules.add(ManeuverEngineModule.class);
+        mandatoryModules.add(JumpEngineModule.class);
+
+        // Рандомно выбираем по одному модулю из списка обязательных модулей
+        while (installedModules.size() < mandatoryModules.size()) {
+            Class<? extends SpaceshipModule> moduleClass = mandatoryModules.get(ThreadLocalRandom.current().nextInt(mandatoryModules.size()));
+            SpaceshipModule module = createModuleInstance(moduleClass);
+            if (module != null) {
+                installedModules.add(module);
+                usedModules += module.getSlotsOccupied();
+            }
+        }
+    }
+
+    private SpaceshipModule createModuleInstance(Class<? extends SpaceshipModule> moduleClass) {
+        try {
+            if (moduleClass == CommunicationModule.class) {
+                return new CommunicationModule();
+            } else if (moduleClass == FuelTankModule.class) {
+                return new FuelTankModule(1);
+            } else if (moduleClass == JumpEngineModule.class) {
+                return new JumpEngineModule(1, 1);
+            } else if (moduleClass == LivingModule.class) {
+                return new LivingModule();
+            } else if (moduleClass == ManeuverEngineModule.class) {
+                return new ManeuverEngineModule(1, 1, 1);
+            } else if (moduleClass == RepairModule.class) {
+                return new RepairModule();
+            } else if (moduleClass == SolarPanelModule.class) {
+                return new SolarPanelModule();
+            } else if (moduleClass == LargeScanningModule.class) {
+                return new LargeScanningModule();
+            } else if (moduleClass == MediumScanningModule.class) {
+                return new MediumScanningModule();
+            } else if (moduleClass == SmallScanningModule.class) {
+                return new SmallScanningModule();
+            } else {
+                throw new IllegalArgumentException("Unsupported module class: " + moduleClass.getName());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
     public String getId() {
         return id;
