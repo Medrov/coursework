@@ -29,12 +29,13 @@ public class PlanetarySystem {
         return Double.valueOf(df.format(size));
     }
 
-    public double setDot(double sizeStr) {
-        // Заменить запятую на точку перед преобразованием в double
-        String str = String.valueOf(sizeStr);
-        str = str.replace(',', '.');
-        this.size = Double.parseDouble(str);
-        return sizeStr;
+    public boolean hasHabitablePlanets() {
+        for (AstronomicalObject obj : objects) {
+            if (obj instanceof Planet && ((Planet) obj).isHabitable()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public String getName() {

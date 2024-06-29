@@ -41,13 +41,13 @@ public class SpaceMissionManager {
         int returningShips = 0;
         int colonyCount = 0;
         for (Spaceship spaceship : spaceships) {
-            if (spaceship.hasReturned()) {
+            if (spaceship.isReturned()) {
                 returningShips++;
             }
             if (spaceship.isColonized()) {
                 colonyCount++;
             }
-            if (!spaceship.hasReturned() && !spaceship.isColonized()) {
+            if (!spaceship.isReturned() && !spaceship.isColonized()) {
                 lostShips++;
             }
         }

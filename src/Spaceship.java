@@ -43,7 +43,7 @@ class Spaceship implements Runnable {
         return id;
     }
 
-    public boolean hasReturned() {
+    public boolean isReturned() {
         return hasReturned;
     }
 
@@ -233,9 +233,11 @@ class Spaceship implements Runnable {
             }
         }
     }
-
+    public void startExpedition() {
+        currentAction = "Started expedition";
+    }
     public void returnToBase() {
-        hasReturned = true;
+        setReturned(true);
         gui.appendLog("Spaceship " + id + " returned to base.");
         currentAction = "Returning to base";
         updateUI("Returned to base");
