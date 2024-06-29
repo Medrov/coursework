@@ -1,3 +1,7 @@
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
+
 class Moon extends AstronomicalObject {
     private Planet planet;
     private double surfaceTemperature;
@@ -26,7 +30,9 @@ class Moon extends AstronomicalObject {
 
     @Override
     public double getSurfaceTemperature() {
-        return surfaceTemperature;
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
+        DecimalFormat df = new DecimalFormat("#.00", symbols);
+        return Double.valueOf(df.format(surfaceTemperature));
     }
 
     @Override

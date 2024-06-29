@@ -1,5 +1,8 @@
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class PlanetarySystem {
     private String name;
@@ -21,7 +24,17 @@ public class PlanetarySystem {
     }
 
     public double getSize() {
-        return size;
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
+        DecimalFormat df = new DecimalFormat("#.00", symbols);
+        return Double.valueOf(df.format(size));
+    }
+
+    public double setDot(double sizeStr) {
+        // Заменить запятую на точку перед преобразованием в double
+        String str = String.valueOf(sizeStr);
+        str = str.replace(',', '.');
+        this.size = Double.parseDouble(str);
+        return sizeStr;
     }
 
     public String getName() {

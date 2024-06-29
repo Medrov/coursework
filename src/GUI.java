@@ -15,9 +15,11 @@ public class GUI extends JFrame {
     private List<PlanetarySystem> planetarySystems;
     private List<Spaceship> spaceships;
     private JPanel shipsPanel;
+    private JPanel systemsPanel;
     private JList<String> logList;
     private DefaultListModel<String> logListModel;
     private ExecutorService executor;
+    private boolean isStartButtonClicked = false;
 
     public GUI() {
         setTitle("Space Expedition Control");
@@ -42,7 +44,7 @@ public class GUI extends JFrame {
         centerPanel.setLayout(new GridLayout(1, 3, 10, 10));
         centerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JPanel systemsPanel = new JPanel();
+        systemsPanel = new JPanel();
         systemsPanel.setLayout(new BoxLayout(systemsPanel, BoxLayout.Y_AXIS));
         systemsPanel.setBorder(BorderFactory.createTitledBorder("Planetary Systems"));
 
@@ -81,7 +83,7 @@ public class GUI extends JFrame {
         add(topPanel, BorderLayout.NORTH);
 
         // Handlers
-        startButton.addActionListener(event -> startNewExpedition(systemsPanel));
+        startButton.addActionListener(event -> mainStart(startButton, systemsPanel));
         createShipButton.addActionListener(event -> createSpaceship());
         startExpeditionButton.addActionListener(event -> startExpedition());
         setupFlightButton.addActionListener(event -> openFlightSetupDialog());
@@ -116,6 +118,16 @@ public class GUI extends JFrame {
         JOptionPane.showMessageDialog(this, scrollPane, "System Info", JOptionPane.INFORMATION_MESSAGE);
     }
 
+    private void mainStart(JButton startButton, JPanel systemsPanel) {
+        if (!isStartButtonClicked) {
+            startNewExpedition(systemsPanel);
+            isStartButtonClicked = true;
+            JOptionPane.showMessageDialog(this, "The expedition has started!", "Start", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, "The expedition has already started.", "Start", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
     private void startNewExpedition(JPanel systemsPanel) {
         planetarySystems = generatePlanetarySystems();
         expedition = new Expedition();
@@ -148,7 +160,7 @@ public class GUI extends JFrame {
         panel.add(new JLabel("Objects:"));
 
         for (AstronomicalObject obj : system.getObjects()) {
-            JButton objButton = new JButton(obj.getName() + " - " + obj.getClass().getSimpleName());
+            JButton objButton = new JButton(obj.getName() + " - " + obj.getClass().getSimpleName()+ " - Distance: " + obj.getDistanceFromCenter()+ " AU");
             objButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -344,15 +356,28 @@ public class GUI extends JFrame {
     }
 
     private void restartProgram() {
-        spaceships.clear();
+        isStartButtonClicked = false;
+        planetarySystems = null;
+        expedition = null;
+        spaceships = null;
+
+        // Удаляем элементы из панелей
         shipsPanel.removeAll();
+        systemsPanel.removeAll(); // Добавляем очистку панели систем
+
+        // Очищаем лог
         logListModel.clear();
-        expedition = new Expedition();
-        planetarySystems = generatePlanetarySystems();
-        planetarySystems.forEach(expedition::addSystem);
-        logListModel.addElement("Program restarted.");
+
+        // Обновляем GUI
+        shipsPanel.revalidate();
+        shipsPanel.repaint();
+        systemsPanel.revalidate(); // Обновляем также панель систем
+        systemsPanel.repaint();
+
         revalidate();
         repaint();
+
+        logListModel.addElement("Program restarted.");
     }
 
     private void openFlightSetupDialog() {
