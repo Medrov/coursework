@@ -451,7 +451,9 @@ public class GUI extends JFrame {
 
                     if (selectedShip != null && selectedSystem != null) {
                         selectedShip.jumpToSystem(selectedSystem);
-                        appendLog("Spaceship " + selectedShipId + " jumped to " + selectedSystemName);
+                        selectedShip.currentSystem = selectedShip.targetSystem;
+                        appendLog("Spaceship " + selectedShipId + "Jumped to " + selectedSystemName);
+                        updateShipStatus(selectedShip);
                     }
                 }
                 dialog.dispose();
@@ -539,7 +541,7 @@ public class GUI extends JFrame {
                         label.setForeground(Color.CYAN);
                     } else if (spaceship.isColonized) {
                         label.setForeground(Color.ORANGE);
-                    } else if (spaceship.getStatus().contains("Started") || spaceship.getStatus().contains("Exploring")) {
+                    } else if (spaceship.getStatus().contains("Started") || spaceship.getStatus().contains("Jumped ")) {
                         label.setForeground(Color.GREEN);
                     } else {
                         label.setForeground(Color.RED);
