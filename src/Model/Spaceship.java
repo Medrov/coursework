@@ -59,7 +59,7 @@ public class Spaceship implements Runnable {
         double distance = ThreadLocalRandom.current().nextDouble(0, targetSystem.getSize());
         boolean habitablePlanetFound = false;
 
-        gui.appendLog("Spaceship " + id + " is exploring " + targetSystem.getName() + " and will travel " + distance + " astronomical units.");
+        logUI("Spaceship " + id + " is exploring " + targetSystem.getName() + " and will travel " + distance + " astronomical units.");
 
         travelDistance(distance);
 
@@ -70,7 +70,7 @@ public class Spaceship implements Runnable {
                     // Scan planet logic
                     if (scanPlanet(planet)) {
                         isColonized = true;
-                        gui.appendLog("Spaceship " + id + " colonized planet " + planet.getName());
+                        logUI("Spaceship " + id + " colonized planet " + planet.getName());
                         logUI("Colonized " + planet.getName());
                         showPlanetFoundDialog(planet);
                         return;
@@ -108,7 +108,7 @@ public class Spaceship implements Runnable {
                 visitedSystems.add(targetSystem);
                 if (remainingJumps > 0 && isFunctional) {
                     remainingJumps--;
-                    gui.appendLog("Spaceship " + id + " jumped to " + targetSystem.getName());
+                    logUI("Spaceship " + id + " jumped to " + targetSystem.getName());
                     logUI("Jumping to " + targetSystem.getName());
                     exploreSystem();
                     if (isColonized) {
@@ -116,7 +116,7 @@ public class Spaceship implements Runnable {
                     }
                 }
             } else {
-                gui.appendLog("Spaceship " + id + " has already visited " + targetSystem.getName());
+                logUI("Spaceship " + id + " has already visited " + targetSystem.getName());
             }
             // Return to base if out of jumps
             if (remainingJumps == 0 && isFunctional) {
@@ -129,7 +129,7 @@ public class Spaceship implements Runnable {
                 e.printStackTrace();
             }
         }
-        gui.appendLog("Spaceship " + id + " has ended its mission.");
+        logUI("Spaceship " + id + " has ended its mission.");
     }
 
     private boolean scanPlanet(Planet planet) {
@@ -152,7 +152,7 @@ public class Spaceship implements Runnable {
 
     public void returnToBase() {
         this.isReturned = true;
-        gui.appendLog("Spaceship " + id + " returned to base.");
+        logUI("Spaceship " + id + " returned to base.");
         currentAction = "Returning to base";
         logUI("Returned to base");
     }
@@ -165,24 +165,26 @@ public class Spaceship implements Runnable {
                     if (planet.isHabitable()) {
                         isColonized = true;
                         fuel -= 10; // Fuel consumption for landing
-                        gui.appendLog("Spaceship " + id + " has landed on planet " + planet.getName());
+                        logUI("Spaceship " + id + " has landed on planet " + planet.getName());
                         logUI("Landed on " + planet.getName());
+                        currentAction = "Landed on " + planet.getName();
                         return;
                     }
                 }
             }
         }
-        gui.appendLog("Spaceship " + id + " could not land on any habitable planet or insufficient fuel.");
+        logUI("Spaceship " + id + " could not land on any habitable planet or insufficient fuel.");
         logUI("Landing failed");
     }
 
     public void takeOff() {
         if (isColonized) {
             isColonized = false;
-            gui.appendLog("Spaceship " + id + " has taken off.");
+            logUI("Spaceship " + id + " has taken off.");
             logUI("Taken off");
+            currentAction = id + " has taken off.";
         } else {
-            gui.appendLog("Spaceship " + id + " is not on any planet to take off.");
+            logUI("Spaceship " + id + " is not on any planet to take off.");
             logUI("Take off failed");
         }
     }
@@ -191,11 +193,11 @@ public class Spaceship implements Runnable {
         if (remainingJumps > 0 && isFunctional) {
             currentSystem = targetSystem;
             remainingJumps--;
-            gui.appendLog("Spaceship " + id + " jumped to " + targetSystem.getName());
+            logUI("Spaceship " + id + " jumped to " + targetSystem.getName());
             logUI("Jumped to " + targetSystem.getName());
             isColonized = false;
         } else {
-            gui.appendLog("Spaceship " + id + " has no remaining jumps or is not functional.");
+            logUI("Spaceship " + id + " has no remaining jumps or is not functional.");
             logUI("Jump failed");
         }
     }
@@ -292,13 +294,13 @@ public class Spaceship implements Runnable {
 
     private boolean attemptRepair(SpaceshipModule module) {
         if (hasModule(RepairModule.class)) {
-            gui.appendLog("Spaceship " + id + " is repairing module: " + module.getDescription());
+            logUI("Spaceship " + id + " is repairing module: " + module.getDescription());
             try {
                 Thread.sleep(3000); // Repair time
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            gui.appendLog("Spaceship " + id + " has repaired module: " + module.getDescription());
+            logUI("Spaceship " + id + " has repaired module: " + module.getDescription());
             return true;
         }
         return false;
@@ -306,47 +308,47 @@ public class Spaceship implements Runnable {
 
     private void handleModuleFailure(SpaceshipModule module) {
         if (module instanceof CommunicationModule) {
-            gui.appendLog("Spaceship " + id + " has lost communication with command. Mission lost.");
+            logUI("Spaceship " + id + " has lost communication with command. Mission lost.");
             currentAction = "Lost communication";
             isFunctional = false;
         } else if (module instanceof SolarPanelModule) {
-            gui.appendLog("Spaceship " + id + " has lost energy. Mission lost.");
+            logUI("Spaceship " + id + " has lost energy. Mission lost.");
             currentAction = "Lost energy";
             isFunctional = false;
         } else if (module instanceof LivingModule) {
-            gui.appendLog("Spaceship " + id + " has no more crew members. Mission lost.");
+            logUI("Spaceship " + id + " has no more crew members. Mission lost.");
             currentAction = "Lost crew";
             isFunctional = false;
         } else if (module instanceof RepairModule) {
-            gui.appendLog("Spaceship " + id + " cannot perform repairs. Mission lost.");
+            logUI("Spaceship " + id + " cannot perform repairs. Mission lost.");
             currentAction = "Repair failure";
             isFunctional = false;
         } else if (module instanceof ScanningModule) {
-            gui.appendLog("Spaceship " + id + " cannot scan planets. Landing will be blind.");
+            logUI("Spaceship " + id + " cannot scan planets. Landing will be blind.");
             currentAction = "No scanning";
         } else if (module instanceof ManeuverEngineModule) {
-            gui.appendLog("Spaceship " + id + " cannot maneuver in planetary system. Mission compromised.");
+            logUI("Spaceship " + id + " cannot maneuver in planetary system. Mission compromised.");
             currentAction = "No maneuvering";
         } else if (module instanceof JumpEngineModule) {
             if (remainingJumps == 0) {
-                gui.appendLog("Spaceship " + id + " has no remaining jumps. Mission lost.");
+                logUI("Spaceship " + id + " has no remaining jumps. Mission lost.");
                 currentAction = "No jumps left";
                 isFunctional = false;
             } else {
-                gui.appendLog("Spaceship " + id + " cannot perform jumps. Mission compromised.");
+                logUI("Spaceship " + id + " cannot perform jumps. Mission compromised.");
                 currentAction = "Jump failure";
             }
         } else if (module instanceof FuelTankModule) {
             if (fuel == 0 && remainingJumps == 0) {
-                gui.appendLog("Spaceship " + id + " has no fuel and cannot return to base. Mission lost.");
+                logUI("Spaceship " + id + " has no fuel and cannot return to base. Mission lost.");
                 currentAction = "Fuel depleted";
                 isFunctional = false;
             } else if (fuel == 0) {
-                gui.appendLog("Spaceship " + id + " has no fuel. Movement halted.");
+                logUI("Spaceship " + id + " has no fuel. Movement halted.");
                 currentAction = "No fuel";
                 isFunctional = false;
             } else {
-                gui.appendLog("Spaceship " + id + " has lost its fuel tank. Mission compromised.");
+                logUI("Spaceship " + id + " has lost its fuel tank. Mission compromised.");
                 currentAction = "Fuel tank failure";
             }
         }

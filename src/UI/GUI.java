@@ -91,12 +91,14 @@ public class GUI extends JFrame {
         JButton setupFlightButton = new JButton("Setup Flight");
         JButton spaceshipSettingsButton = new JButton("Spaceship settings");
         JButton setupJumpButton = new JButton("Setup Jump");
+        JButton finishButton = new JButton("Finish Expedition");
         topPanel.add(startButton);
         topPanel.add(createShipButton);
         topPanel.add(setupFlightButton);
         topPanel.add(startExpeditionButton);
         topPanel.add(spaceshipSettingsButton);
         topPanel.add(setupJumpButton);
+        topPanel.add(finishButton);
         add(topPanel, BorderLayout.NORTH);
 
         // Handlers
@@ -106,6 +108,7 @@ public class GUI extends JFrame {
         startExpeditionButton.addActionListener(event -> startExpedition());
         spaceshipSettingsButton.addActionListener(event -> openSpaceshipSettingsDialog());
         setupJumpButton.addActionListener(event -> openJumpSetupDialog());
+        finishButton.addActionListener(event -> finishExpedition());
         menuItemRestart.addActionListener(event -> restartProgram());
         menuItemExit.addActionListener(event -> System.exit(0));
         menuItemInfo.addActionListener(event -> showSystemInfo());
@@ -157,7 +160,6 @@ public class GUI extends JFrame {
                 for (Spaceship spaceship : spaceships) {
                     executor.submit(spaceship);
                     spaceship.currentSystem = spaceship.targetSystem;
-                    System.out.println("spaceship.currentSystem " + spaceship.currentSystem);
                     spaceship.startExpedition();
                     updateShipStatus(spaceship);
                 }
@@ -259,6 +261,7 @@ public class GUI extends JFrame {
             }
 
             panel.add(objButton);
+
         }
 
         JScrollPane scrollPane = new JScrollPane(panel);
@@ -463,7 +466,6 @@ public class GUI extends JFrame {
         }
     }
 
-
     private void openSpaceshipSettingsDialog() {
         JDialog dialog = new JDialog(this, "Spaceship Settings", true);
         dialog.setLayout(new BorderLayout());
@@ -546,7 +548,6 @@ public class GUI extends JFrame {
             }
         }
     }
-
     private void restartProgram() {
         isStartButtonClicked = false;
         isExpeditionStarted = false;
@@ -571,6 +572,41 @@ public class GUI extends JFrame {
         repaint();
 
         logListModel.addElement("Program restarted.");
+    }
+
+    private void finishExpedition() {
+        int lostShips = 0;
+        int returnedShips = 0;
+        boolean colonyBuilt = false;
+
+        for (Spaceship spaceship : spaceships) {
+            if (spaceship.isColonized) {
+                colonyBuilt = true;
+            } else if (spaceship.isReturned) {
+                returnedShips++;
+            } else {
+                lostShips++;
+            }
+        }
+
+        String message;
+        if (colonyBuilt) {
+            if (lostShips == 0) {
+                message = "The space program was excellent: a colony was built, and all other ships returned to base.";
+            } else {
+                message = "The space program was successful: a colony was built.";
+            }
+        } else {
+            if (lostShips > 3) {
+                message = "The space program failed: more than 3 ships were lost, and no colony was built. The director is fired.";
+            } else if (returnedShips > 3) {
+                message = "The space program was satisfactory: more than 3 ships returned, but no colony was built.";
+            } else {
+                message = "The space program was unsatisfactory.";
+            }
+        }
+
+        JOptionPane.showMessageDialog(this, message, "Program Conclusion", JOptionPane.INFORMATION_MESSAGE);
     }
     public static void main(String[] args) {
         SwingUtilities.invokeLater(GUI::new);
