@@ -353,6 +353,7 @@ public class GUI extends JFrame {
             executor = Executors.newFixedThreadPool(spaceships.size());
             for (Spaceship spaceship : spaceships) {
                 executor.submit(spaceship);
+                spaceship.currentSystem = spaceship.targetSystem;
                 spaceship.startExpedition();
                 updateShipStatus(spaceship);
             }
@@ -545,7 +546,7 @@ public class GUI extends JFrame {
             if (selectedShipId != null) {
                 Spaceship selectedShip = findShipById(selectedShipId);
                 if (selectedShip != null) {
-                    selectedShip.landOnPlanet();
+                    selectedShip.landOnPlanet(selectedShip);
                 }
             }
             dialog.dispose();

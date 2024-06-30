@@ -7,22 +7,22 @@ import Module.Scan.MediumScanningModule;
 import Module.Scan.SmallScanningModule;
 
 class Spaceship implements Runnable {
-    private String id;
-    private boolean hasReturned;
-    private boolean colonized;
-    private int jumpCapacity;
-    private int remainingJumps;
-    private int fuel;
-    private int maxModules;
-    private int usedModules;
-    private boolean isFunctional;
-    private Expedition expedition;
-    private PlanetarySystem currentSystem;
-    private PlanetarySystem targetSystem;
-    private GUI gui;
-    private String currentAction;
+    public String id;
+    public boolean hasReturned;
+    public boolean colonized;
+    public int jumpCapacity;
+    public int remainingJumps;
+    public int fuel;
+    public int maxModules;
+    public int usedModules;
+    public boolean isFunctional;
+    public Expedition expedition;
+    public PlanetarySystem currentSystem;
+    public PlanetarySystem targetSystem;
+    public GUI gui;
+    public String currentAction;
 
-    private List<SpaceshipModule> installedModules;
+    public List<SpaceshipModule> installedModules;
 
     public Spaceship(String id, int jumpCapacity, int fuel, int maxModules, Expedition expedition, GUI gui) {
         this.id = id;
@@ -42,6 +42,7 @@ class Spaceship implements Runnable {
         this.installedModules = new ArrayList<>();
 
         addMandatoryModules();
+        fillWithRandomModules();
     }
 
     private static final Class<? extends SpaceshipModule>[] AVAILABLE_MODULES = new Class[] {
@@ -57,23 +58,21 @@ class Spaceship implements Runnable {
             SmallScanningModule.class,
     };
 
-    private void addMandatoryModules() {
-        List<Class<? extends SpaceshipModule>> mandatoryModules = new ArrayList<>();
-        mandatoryModules.add(LivingModule.class);
-        mandatoryModules.add(CommunicationModule.class);
-        mandatoryModules.add(SolarPanelModule.class);
-        mandatoryModules.add(FuelTankModule.class);
-        mandatoryModules.add(ManeuverEngineModule.class);
-        mandatoryModules.add(JumpEngineModule.class);
 
-        // Рандомно выбираем по одному модулю из списка обязательных модулей
-        while (installedModules.size() < mandatoryModules.size()) {
-            Class<? extends SpaceshipModule> moduleClass = mandatoryModules.get(ThreadLocalRandom.current().nextInt(mandatoryModules.size()));
-            SpaceshipModule module = createModuleInstance(moduleClass);
-            if (module != null) {
-                installedModules.add(module);
-                usedModules += module.getSlotsOccupied();
-            }
+
+    private void addMandatoryModules() {
+        addModule(createModuleInstance(LivingModule.class));
+        addModule(createModuleInstance(CommunicationModule.class));
+        addModule(createModuleInstance(SolarPanelModule.class));
+        addModule(createModuleInstance(FuelTankModule.class));
+        addModule(createModuleInstance(ManeuverEngineModule.class));
+        addModule(createModuleInstance(JumpEngineModule.class));
+    }
+
+    private void fillWithRandomModules() {
+        while (usedModules < maxModules) {
+            Class<? extends SpaceshipModule> moduleClass = AVAILABLE_MODULES[ThreadLocalRandom.current().nextInt(AVAILABLE_MODULES.length)];
+            addModule(createModuleInstance(moduleClass));
         }
     }
 
@@ -88,7 +87,7 @@ class Spaceship implements Runnable {
             } else if (moduleClass == LivingModule.class) {
                 return new LivingModule();
             } else if (moduleClass == ManeuverEngineModule.class) {
-                return new ManeuverEngineModule(1, 1, 1);
+                return new ManeuverEngineModule(1, 10   , 1);
             } else if (moduleClass == RepairModule.class) {
                 return new RepairModule();
             } else if (moduleClass == SolarPanelModule.class) {
@@ -171,7 +170,7 @@ class Spaceship implements Runnable {
             }
             // Return to base if out of jumps
             if (remainingJumps == 0 && isFunctional) {
-                returnToBase();
+                //returnToBase();
             }
             // Sleep for 1 second to simulate passage of time
             try {
@@ -180,7 +179,7 @@ class Spaceship implements Runnable {
                 e.printStackTrace();
             }
         }
-        gui.appendLog("Spaceship " + id + " has ended its mission.");
+        //gui.appendLog("Spaceship " + id + " has ended its mission.");
     }
 
     private void exploreSystem() {
@@ -189,7 +188,7 @@ class Spaceship implements Runnable {
         for (AstronomicalObject obj : currentSystem.getObjects()) {
             if (obj instanceof Planet) {
                 Planet planet = (Planet) obj;
-                if (distance == planet.getDistanceFromCenter()) {
+                if (distance >= planet.getDistanceFromCenter()) {
                     gui.appendLog("Spaceship " + id + " found planet " + planet.getName());
                     updateUI("Exploring " + planet.getName());
 
@@ -198,13 +197,14 @@ class Spaceship implements Runnable {
                         colonized = true;
                         gui.appendLog("Spaceship " + id + " colonized planet " + planet.getName());
                         updateUI("Colonized " + planet.getName());
+                        currentAction = "Colonized";
                         return;
                     }
                 }
             }
         }
         if (!habitablePlanetFound) {
-            returnToBase();
+            //returnToBase();
         }
     }
 
@@ -313,8 +313,10 @@ class Spaceship implements Runnable {
         updateUI("Returned to base");
     }
 
-    public void landOnPlanet() {
+    public void landOnPlanet(Spaceship spaceship) {
+        System.out.println("1. " + spaceship.currentSystem + " 2. " + !colonized + " 3. " + fuel);
         if (currentSystem != null && !colonized && fuel >= 10) {
+
             for (AstronomicalObject obj : currentSystem.getObjects()) {
                 if (obj instanceof Planet) {
                     Planet planet = (Planet) obj;
