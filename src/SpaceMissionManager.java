@@ -21,7 +21,7 @@ public class SpaceMissionManager {
         this.lostShips = 0;
 
         for (int i = 1; i <= numSpaceships; i++) {
-            Spaceship spaceship = new Spaceship("Model.Spaceship-" + i, jumpCapacity, fuel, maxModulesPerShip, expedition, gui);
+            Spaceship spaceship = new Spaceship("Spaceship-" + i, jumpCapacity, fuel, maxModulesPerShip, expedition, gui);
             spaceships.add(spaceship);
         }
     }
