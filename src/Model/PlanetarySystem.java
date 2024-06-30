@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static Util.Utils.getNormalDouble;
+
 public class PlanetarySystem {
     private String name;
     private List<AstronomicalObject> objects;
@@ -27,9 +29,7 @@ public class PlanetarySystem {
     }
 
     public double getSize() {
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
-        DecimalFormat df = new DecimalFormat("#.00", symbols);
-        return Double.valueOf(df.format(size));
+        return getNormalDouble(size);
     }
 
     public boolean hasHabitablePlanets() {

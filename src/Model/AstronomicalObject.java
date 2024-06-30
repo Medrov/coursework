@@ -4,6 +4,8 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
+import static Util.Utils.getNormalDouble;
+
 public abstract class AstronomicalObject {
     protected String name;
     protected double distanceFromCenter; // в а.е.
@@ -18,9 +20,7 @@ public abstract class AstronomicalObject {
     }
 
     public double getDistanceFromCenter() {
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
-        DecimalFormat df = new DecimalFormat("#.00", symbols);
-        return Double.valueOf(df.format(distanceFromCenter));
+        return getNormalDouble(distanceFromCenter);
     }
     public abstract boolean isStar();
     public abstract double getSurfaceTemperature();

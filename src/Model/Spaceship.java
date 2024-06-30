@@ -10,6 +10,8 @@ import Module.Scan.MediumScanningModule;
 import Module.Scan.SmallScanningModule;
 import UI.GUI;
 
+import static Util.Utils.getNormalDouble;
+
 public class Spaceship implements Runnable {
     public String id;
     public boolean isReturned;
@@ -56,25 +58,18 @@ public class Spaceship implements Runnable {
         currentAction = "Started expedition";
     }
     private void exploreSystem() {
-        double distance = ThreadLocalRandom.current().nextDouble(0, targetSystem.getSize());
+        double distance = targetSystem.getSize();
         boolean habitablePlanetFound = false;
 
         logUI("Spaceship " + id + " is exploring " + targetSystem.getName() + " and will travel " + distance + " astronomical units.");
-
         travelDistance(distance);
-
         for (AstronomicalObject obj : targetSystem.getObjects()) {
             if (obj instanceof Planet) {
                 Planet planet = (Planet) obj;
-                if (distance >= planet.getDistanceFromCenter()) {
-                    // Scan planet logic
-                    if (scanPlanet(planet)) {
-                        isColonized = true;
-                        logUI("Spaceship " + id + " colonized planet " + planet.getName());
-                        logUI("Colonized " + planet.getName());
-                        showPlanetFoundDialog(planet);
-                        return;
-                    }
+                if (scanPlanet(planet)) {
+                    habitablePlanetFound = true;
+                    showPlanetFoundDialog(planet);
+                    return;
                 }
             }
         }
@@ -86,17 +81,29 @@ public class Spaceship implements Runnable {
     private void travelDistance(double distance) {
         for (int i = 0; i < distance; i++) {
             distanceTraveled++;
+            fuel--;
             try {
                 Thread.sleep(500); // 0,5 секунд на каждую астрономическую единицу
+                logUI("");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
     }
 
+
     private void showPlanetFoundDialog(Planet planet) {
-        JOptionPane.showMessageDialog(gui, "Spaceship " + id + " has found a habitable planet: " + planet.getName(),
-                "Planet Found", JOptionPane.INFORMATION_MESSAGE);
+        int response = JOptionPane.showConfirmDialog(gui, "Spaceship " + id + " has found a habitable planet: " + planet.getName() + ".\nWould you like to colonize this planet?",
+                "Planet Found", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+        if (response == JOptionPane.YES_OPTION) {
+            isColonized = true;
+            logUI("Spaceship " + id + " colonized planet " + planet.getName());
+            logUI("Colonized " + planet.getName());
+            fuel -= 10;
+            currentAction = "Colonized";
+        } else {
+            returnToBase();
+        }
     }
 
     @Override
@@ -118,10 +125,7 @@ public class Spaceship implements Runnable {
             } else {
                 logUI("Spaceship " + id + " has already visited " + targetSystem.getName());
             }
-            // Return to base if out of jumps
-            if (remainingJumps == 0 && isFunctional) {
-                returnToBase();
-            }
+
             // Sleep for 1 second to simulate passage of time
             try {
                 Thread.sleep(1000);
@@ -152,9 +156,10 @@ public class Spaceship implements Runnable {
 
     public void returnToBase() {
         this.isReturned = true;
+        remainingJumps--;
         logUI("Spaceship " + id + " returned to base.");
-        currentAction = "Returning to base";
         logUI("Returned to base");
+        currentAction = "Returned to base";
     }
 
     public void landOnPlanet(Spaceship spaceship) {
@@ -167,7 +172,7 @@ public class Spaceship implements Runnable {
                         fuel -= 10; // Fuel consumption for landing
                         logUI("Spaceship " + id + " has landed on planet " + planet.getName());
                         logUI("Landed on " + planet.getName());
-                        currentAction = "Landed on " + planet.getName();
+                        currentAction = "Colonized " + planet.getName();
                         return;
                     }
                 }
@@ -220,7 +225,7 @@ public class Spaceship implements Runnable {
             if (moduleClass == CommunicationModule.class) {
                 return new CommunicationModule();
             } else if (moduleClass == FuelTankModule.class) {
-                return new FuelTankModule(1);
+                return new FuelTankModule(50);
             } else if (moduleClass == JumpEngineModule.class) {
                 return new JumpEngineModule(1, 1);
             } else if (moduleClass == LivingModule.class) {
@@ -250,7 +255,7 @@ public class Spaceship implements Runnable {
             installedModules.add(module);
             usedModules += module.getSlotsOccupied();
             if (module instanceof FuelTankModule) {
-                fuel += ((FuelTankModule) module).getFuelCapacity();
+                this.fuel += ((FuelTankModule) module).getFuelCapacity();
             }
             return true;
         } else {
@@ -369,6 +374,6 @@ public class Spaceship implements Runnable {
     }
 
     public String getStatus() {
-        return "ID: " + id + ", Jumps left: " + remainingJumps + ", Fuel: " + fuel + ", Modules: " + usedModules + "/" + maxModules +  ", Distance: " + distanceTraveled + ", Action: " + currentAction;
+        return "ID: " + id + ", Jumps left: " + remainingJumps + ", Fuel: " + fuel +  ", Distance: " + distanceTraveled + ", Action: " + currentAction;
     }
 }

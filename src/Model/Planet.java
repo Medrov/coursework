@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static Util.Utils.getNormalDouble;
+
 public class Planet extends AstronomicalObject {
     private double surfaceTemperature;
     private boolean hasAtmosphere;
@@ -46,9 +48,7 @@ public class Planet extends AstronomicalObject {
     }
 
     public double getSurfaceTemperature() {
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
-        DecimalFormat df = new DecimalFormat("#.00", symbols);
-        return Double.valueOf(df.format(surfaceTemperature));
+        return getNormalDouble(surfaceTemperature);
     }
 
     public boolean hasAtmosphere() {
@@ -100,9 +100,7 @@ public class Planet extends AstronomicalObject {
     }
 
     public double getAverageSurfaceTemperature() {
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
-        DecimalFormat df = new DecimalFormat("#.00", symbols);
-        return Double.valueOf(df.format(averageSurfaceTemperature));
+        return getNormalDouble(averageSurfaceTemperature);
     }
 
     public void setAverageSurfaceTemperature(double averageSurfaceTemperature) {
