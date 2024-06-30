@@ -2,7 +2,8 @@ package Model;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
+
 import Module.*;
 import Module.Scan.LargeScanningModule;
 import Module.Scan.MediumScanningModule;
@@ -19,6 +20,7 @@ public class Spaceship implements Runnable {
     public int maxModules;
     public int usedModules;
     public boolean isFunctional;
+    public int distanceTraveled;
     public Expedition expedition;
     public PlanetarySystem currentSystem;
     public PlanetarySystem targetSystem;
@@ -43,8 +45,9 @@ public class Spaceship implements Runnable {
         this.currentSystem = null;
         this.targetSystem = null;
         this.currentAction = "";
+        this.distanceTraveled = 0;
         this.installedModules = new ArrayList<>();
-
+        this.visitedSystems = new HashSet<>();
         addMandatoryModules();
         fillWithRandomModules();
     }
@@ -52,29 +55,68 @@ public class Spaceship implements Runnable {
     public void startExpedition() {
         currentAction = "Started expedition";
     }
+    private void exploreSystem() {
+        double distance = ThreadLocalRandom.current().nextDouble(0, targetSystem.getSize());
+        boolean habitablePlanetFound = false;
+
+        gui.appendLog("Spaceship " + id + " is exploring " + targetSystem.getName() + " and will travel " + distance + " astronomical units.");
+
+        travelDistance(distance);
+
+        for (AstronomicalObject obj : targetSystem.getObjects()) {
+            if (obj instanceof Planet) {
+                Planet planet = (Planet) obj;
+                if (distance >= planet.getDistanceFromCenter()) {
+                    // Scan planet logic
+                    if (scanPlanet(planet)) {
+                        isColonized = true;
+                        gui.appendLog("Spaceship " + id + " colonized planet " + planet.getName());
+                        logUI("Colonized " + planet.getName());
+                        showPlanetFoundDialog(planet);
+                        return;
+                    }
+                }
+            }
+        }
+        if (!habitablePlanetFound) {
+            returnToBase();
+        }
+    }
+
+    private void travelDistance(double distance) {
+        for (int i = 0; i < distance; i++) {
+            distanceTraveled++;
+            try {
+                Thread.sleep(500); // 0,5 секунд на каждую астрономическую единицу
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void showPlanetFoundDialog(Planet planet) {
+        JOptionPane.showMessageDialog(gui, "Spaceship " + id + " has found a habitable planet: " + planet.getName(),
+                "Planet Found", JOptionPane.INFORMATION_MESSAGE);
+    }
+
     @Override
     public void run() {
-        visitedSystems = new HashSet<>();
-
         while (!isReturned && isFunctional && remainingJumps > 0) {
             checkAndRepairModules();
-            // Check if the target system has already been visited
+            // Jump to a new system
             if (!visitedSystems.contains(targetSystem)) {
                 visitedSystems.add(targetSystem);
-                // Jump to a new system
                 if (remainingJumps > 0 && isFunctional) {
                     remainingJumps--;
                     gui.appendLog("Spaceship " + id + " jumped to " + targetSystem.getName());
-                    updateUI("Jumping to " + targetSystem.getName());
-                    // Explore the system
+                    logUI("Jumping to " + targetSystem.getName());
                     exploreSystem();
                     if (isColonized) {
                         return;
                     }
                 }
             } else {
-                gui.appendLog("Spaceship " + id + " has already on " + targetSystem.getName());
-                return;
+                gui.appendLog("Spaceship " + id + " has already visited " + targetSystem.getName());
             }
             // Return to base if out of jumps
             if (remainingJumps == 0 && isFunctional) {
@@ -88,32 +130,6 @@ public class Spaceship implements Runnable {
             }
         }
         gui.appendLog("Spaceship " + id + " has ended its mission.");
-    }
-
-    private void exploreSystem() {
-        double distance = ThreadLocalRandom.current().nextDouble(0, currentSystem.getSize());
-        boolean habitablePlanetFound = false;
-        for (AstronomicalObject obj : currentSystem.getObjects()) {
-            if (obj instanceof Planet) {
-                Planet planet = (Planet) obj;
-                if (distance >= planet.getDistanceFromCenter()) {
-                    gui.appendLog("Spaceship " + id + " found planet " + planet.getName());
-                    updateUI("Exploring " + planet.getName());
-
-                    // Scan planet logic
-                    if (scanPlanet(planet)) {
-                        isColonized = true;
-                        gui.appendLog("Spaceship " + id + " isColonized planet " + planet.getName());
-                        updateUI("Colonized " + planet.getName());
-                        currentAction = "Colonized";
-                        return;
-                    }
-                }
-            }
-        }
-        if (!habitablePlanetFound) {
-            //returnToBase();
-        }
     }
 
     private boolean scanPlanet(Planet planet) {
@@ -138,13 +154,11 @@ public class Spaceship implements Runnable {
         this.isReturned = true;
         gui.appendLog("Spaceship " + id + " returned to base.");
         currentAction = "Returning to base";
-        updateUI("Returned to base");
+        logUI("Returned to base");
     }
 
     public void landOnPlanet(Spaceship spaceship) {
-        System.out.println("1. " + spaceship.currentSystem + " 2. " + !isColonized + " 3. " + fuel);
         if (currentSystem != null && !isColonized && fuel >= 10) {
-
             for (AstronomicalObject obj : currentSystem.getObjects()) {
                 if (obj instanceof Planet) {
                     Planet planet = (Planet) obj;
@@ -152,24 +166,24 @@ public class Spaceship implements Runnable {
                         isColonized = true;
                         fuel -= 10; // Fuel consumption for landing
                         gui.appendLog("Spaceship " + id + " has landed on planet " + planet.getName());
-                        updateUI("Landed on " + planet.getName());
+                        logUI("Landed on " + planet.getName());
                         return;
                     }
                 }
             }
         }
         gui.appendLog("Spaceship " + id + " could not land on any habitable planet or insufficient fuel.");
-        updateUI("Landing failed");
+        logUI("Landing failed");
     }
 
     public void takeOff() {
         if (isColonized) {
             isColonized = false;
             gui.appendLog("Spaceship " + id + " has taken off.");
-            updateUI("Taken off");
+            logUI("Taken off");
         } else {
             gui.appendLog("Spaceship " + id + " is not on any planet to take off.");
-            updateUI("Take off failed");
+            logUI("Take off failed");
         }
     }
 
@@ -178,11 +192,11 @@ public class Spaceship implements Runnable {
             currentSystem = targetSystem;
             remainingJumps--;
             gui.appendLog("Spaceship " + id + " jumped to " + targetSystem.getName());
-            updateUI("Jumped to " + targetSystem.getName());
+            logUI("Jumped to " + targetSystem.getName());
             isColonized = false;
         } else {
             gui.appendLog("Spaceship " + id + " has no remaining jumps or is not functional.");
-            updateUI("Jump failed");
+            logUI("Jump failed");
         }
     }
 
@@ -345,7 +359,7 @@ public class Spaceship implements Runnable {
         }
         return null;
     }
-    private void updateUI(String message) {
+    private void logUI(String message) {
         SwingUtilities.invokeLater(() -> {
             gui.appendLog(message);
             gui.updateShipStatus(this);
@@ -353,6 +367,6 @@ public class Spaceship implements Runnable {
     }
 
     public String getStatus() {
-        return "ID: " + id + ", Jumps left: " + remainingJumps + ", Fuel: " + fuel + ", Modules: " + usedModules + "/" + maxModules + ", Action: " + currentAction;
+        return "ID: " + id + ", Jumps left: " + remainingJumps + ", Fuel: " + fuel + ", Modules: " + usedModules + "/" + maxModules +  ", Distance: " + distanceTraveled + ", Action: " + currentAction;
     }
 }

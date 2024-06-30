@@ -63,10 +63,6 @@ public class GUI extends JFrame {
         shipsPanel.setLayout(new BoxLayout(shipsPanel, BoxLayout.Y_AXIS));
         shipsPanel.setBorder(BorderFactory.createTitledBorder("Spaceships"));
 
-        JPanel actionsPanel = new JPanel();
-        actionsPanel.setLayout(new BoxLayout(actionsPanel, BoxLayout.Y_AXIS));
-        actionsPanel.setBorder(BorderFactory.createTitledBorder("Actions"));
-
         // Add systemsPanel to centerPanel
         gbc.gridx = 0;
         gbc.weightx = 0.25; // 25% width
@@ -74,13 +70,9 @@ public class GUI extends JFrame {
 
         // Add shipsPanel to centerPanel
         gbc.gridx = 1;
-        gbc.weightx = 0.5; // 50% width
+        gbc.weightx = 0.75; // 50% width
         centerPanel.add(shipsPanel, gbc);
 
-        // Add actionsPanel to centerPanel
-        gbc.gridx = 2;
-        gbc.weightx = 0.25; // 25% width
-        centerPanel.add(actionsPanel, gbc);
 
         add(centerPanel, BorderLayout.CENTER);
 
@@ -165,6 +157,7 @@ public class GUI extends JFrame {
                 for (Spaceship spaceship : spaceships) {
                     executor.submit(spaceship);
                     spaceship.currentSystem = spaceship.targetSystem;
+                    System.out.println("spaceship.currentSystem " + spaceship.currentSystem);
                     spaceship.startExpedition();
                     updateShipStatus(spaceship);
                 }
@@ -383,8 +376,6 @@ public class GUI extends JFrame {
                     Spaceship ship = spaceships.get(i);
                     PlanetarySystem system = planetarySystems.get(i);
                     ship.targetSystem = system;
-
-
                     appendLog("Assigned " + ship.id + " to " + system.getName());
                 }
                 System.out.println("All ships have been assigned to systems.");
@@ -530,23 +521,6 @@ public class GUI extends JFrame {
 
         dialog.add(panel, BorderLayout.CENTER);
         dialog.setVisible(true);
-    }
-
-    public String getDirectionFromUser() {
-        String[] options = {"towards", "away"};
-        int choice = JOptionPane.showOptionDialog(this,
-                "In which direction should the spaceship move?",
-                "Move Direction",
-                JOptionPane.DEFAULT_OPTION,
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                options,
-                options[0]);
-        if (choice == 0) {
-            return "towards";
-        } else {
-            return "away";
-        }
     }
 
     public void appendLog(String message) {
