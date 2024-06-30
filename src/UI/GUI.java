@@ -306,14 +306,14 @@ public class GUI extends JFrame {
 
     private void showShipModules(Spaceship spaceship) {
         StringBuilder moduleList = new StringBuilder();
-        moduleList.append("Modules of ").append(spaceship.getId()).append(":").append("\n");
+        moduleList.append("Modules of ").append(spaceship.id).append(":").append("\n");
         moduleList.append("----------------------------").append("\n");
 
         for (SpaceshipModule module : spaceship.installedModules) {
             moduleList.append("- ").append(module.getDescription()).append("\n");
         }
 
-        JOptionPane.showMessageDialog(this, moduleList.toString(), "Modules of " + spaceship.getId(), JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, moduleList.toString(), "Modules of " + spaceship.id, JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void openFlightSetupDialog() {
@@ -334,7 +334,7 @@ public class GUI extends JFrame {
             JComboBox<String> systemComboBox = new JComboBox<>();
 
             for (Spaceship ship : spaceships) {
-                shipComboBox.addItem(ship.getId());
+                shipComboBox.addItem(ship.id);
             }
 
             for (PlanetarySystem system : planetarySystems) {
@@ -353,7 +353,7 @@ public class GUI extends JFrame {
                 if (selectedShipId != null && selectedSystemName != null) {
                     Spaceship selectedShip = null;
                     for (Spaceship ship : spaceships) {
-                        if (ship.getId().equals(selectedShipId)) {
+                        if (ship.id.equals(selectedShipId)) {
                             selectedShip = ship;
                             break;
                         }
@@ -368,8 +368,7 @@ public class GUI extends JFrame {
                     }
 
                     if (selectedShip != null && selectedSystem != null) {
-                        selectedShip.setTargetSystem(selectedSystem);
-                        System.out.println(selectedShip.getTargetSystem());
+                        selectedShip.targetSystem = selectedSystem;
                         appendLog("Assigned " + selectedShipId + " to " + selectedSystemName);
                     }
                 }
@@ -383,8 +382,10 @@ public class GUI extends JFrame {
                 for (int i = 0; i < shipCount; i++) {
                     Spaceship ship = spaceships.get(i);
                     PlanetarySystem system = planetarySystems.get(i);
-                    ship.setTargetSystem(system);
-                    appendLog("Assigned " + ship.getId() + " to " + system.getName());
+                    ship.targetSystem = system;
+
+
+                    appendLog("Assigned " + ship.id + " to " + system.getName());
                 }
                 System.out.println("All ships have been assigned to systems.");
                 dialog.dispose();
@@ -417,7 +418,7 @@ public class GUI extends JFrame {
             JComboBox<String> systemComboBox = new JComboBox<>();
 
             for (Spaceship ship : spaceships) {
-                shipComboBox.addItem(ship.getId());
+                shipComboBox.addItem(ship.id);
             }
 
             for (PlanetarySystem system : planetarySystems) {
@@ -440,7 +441,7 @@ public class GUI extends JFrame {
                 if (selectedShipId != null && selectedSystemName != null) {
                     Spaceship selectedShip = null;
                     for (Spaceship ship : spaceships) {
-                        if (ship.getId().equals(selectedShipId)) {
+                        if (ship.id.equals(selectedShipId)) {
                             selectedShip = ship;
                             break;
                         }
@@ -456,7 +457,6 @@ public class GUI extends JFrame {
 
                     if (selectedShip != null && selectedSystem != null) {
                         selectedShip.jumpToSystem(selectedSystem);
-                        System.out.println(selectedShip.getTargetSystem());
                         appendLog("Spaceship " + selectedShipId + " jumped to " + selectedSystemName);
                     }
                 }
@@ -486,7 +486,7 @@ public class GUI extends JFrame {
         JComboBox<String> shipComboBox = new JComboBox<>();
 
         for (Spaceship ship : spaceships) {
-            shipComboBox.addItem(ship.getId());
+            shipComboBox.addItem(ship.id);
         }
 
         panel.add(shipComboBox);
@@ -532,6 +532,23 @@ public class GUI extends JFrame {
         dialog.setVisible(true);
     }
 
+    public String getDirectionFromUser() {
+        String[] options = {"towards", "away"};
+        int choice = JOptionPane.showOptionDialog(this,
+                "In which direction should the spaceship move?",
+                "Move Direction",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[0]);
+        if (choice == 0) {
+            return "towards";
+        } else {
+            return "away";
+        }
+    }
+
     public void appendLog(String message) {
         logListModel.addElement(message);
     }
@@ -540,11 +557,11 @@ public class GUI extends JFrame {
         for (Component component : shipsPanel.getComponents()) {
             if (component instanceof JLabel) {
                 JLabel label = (JLabel) component;
-                if (label.getText().contains(spaceship.getId())) {
+                if (label.getText().contains(spaceship.id)) {
                     label.setText(spaceship.getStatus());
-                    if (spaceship.isReturned()) {
+                    if (spaceship.isReturned) {
                         label.setForeground(Color.CYAN);
-                    } else if (spaceship.isColonized()) {
+                    } else if (spaceship.isColonized) {
                         label.setForeground(Color.ORANGE);
                     } else if (spaceship.getStatus().contains("Started") || spaceship.getStatus().contains("Exploring")) {
                         label.setForeground(Color.GREEN);
