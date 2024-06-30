@@ -1,3 +1,5 @@
+package UI;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -9,6 +11,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
+
+import Model.*;
+import Module.SpaceshipModule;
 
 public class GUI extends JFrame {
     private Expedition expedition;
@@ -23,7 +28,7 @@ public class GUI extends JFrame {
     private boolean isCreateShipButtonClicked = false;
 
     public GUI() {
-        setTitle("Space Expedition Control");
+        setTitle("Space Model.Expedition Control");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -89,8 +94,8 @@ public class GUI extends JFrame {
         JButton startButton = new JButton("Start");
         JButton createShipButton = new JButton("Create Ship");
         JButton setupFlightButton = new JButton("Setup Flight");
-        JButton startExpeditionButton = new JButton("Start Expedition");
-        JButton spaceshipSettingsButton = new JButton("Spaceship settings");
+        JButton startExpeditionButton = new JButton("Start Model.Expedition");
+        JButton spaceshipSettingsButton = new JButton("Model.Spaceship settings");
         topPanel.add(startButton);
         topPanel.add(createShipButton);
         topPanel.add(setupFlightButton);
@@ -196,7 +201,7 @@ public class GUI extends JFrame {
                 }
                 List<Moon> moons = planet.getMoons();
                 for (Moon moon : moons) {
-                    JButton moonButton = new JButton(" Moon: " + moon.getName() + " - Distance: " + moon.getDistanceFromCenter() + " AU");
+                    JButton moonButton = new JButton(" Model.Moon: " + moon.getName() + " - Distance: " + moon.getDistanceFromCenter() + " AU");
                     moonButton.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -233,7 +238,7 @@ public class GUI extends JFrame {
 
         } else if (obj instanceof Moon) {
             Moon moon = (Moon) obj;
-            details.append("  Distance from Planet: ").append(moon.getDistanceFromCenter()).append(" AU\n");
+            details.append("  Distance from Model.Planet: ").append(moon.getDistanceFromCenter()).append(" AU\n");
 
             // Дополнительные характеристики для спутника
             details.append("  Surface Temperature: ").append(moon.getSurfaceTemperature()).append(" °C\n")
@@ -256,7 +261,7 @@ public class GUI extends JFrame {
             // Генерируем 15 планетарных систем
             for (int i = 1; i <= 15; i++) {
                 PlanetarySystem system = new PlanetarySystem("System-" + i, ThreadLocalRandom.current().nextDouble(10, 100));
-                Star centerStar = new Star("Star-" + i, 0);
+                Star centerStar = new Star("Model.Star-" + i, 0);
                 system.addObject(centerStar);
 
                 boolean systemValid = true; // Флаг для проверки условий компактности и колонизации
@@ -283,7 +288,7 @@ public class GUI extends JFrame {
                     boolean hasOxygenAtmosphere = hasAtmosphere && ThreadLocalRandom.current().nextBoolean();
                     double averageSurfaceTemperature = ThreadLocalRandom.current().nextDouble(0, 25);
 
-                    Planet planet = new Planet("Planet-" + i + "-" + j, distance, temperature, hasAtmosphere, hasOxygen, hasWater,
+                    Planet planet = new Planet("Model.Planet-" + i + "-" + j, distance, temperature, hasAtmosphere, hasOxygen, hasWater,
                             hasSolidSurface, hasGround, hasLiquidWater, hasOxygenAtmosphere, averageSurfaceTemperature, numOfMoons);
                     system.addObject(planet);
 
@@ -295,7 +300,7 @@ public class GUI extends JFrame {
                         boolean hasOxygenMoon = hasAtmosphereMoon && ThreadLocalRandom.current().nextBoolean();
                         boolean hasWaterMoon = ThreadLocalRandom.current().nextBoolean();
                         boolean hasSolidSurfaceMoon = ThreadLocalRandom.current().nextBoolean();
-                        Moon moon = new Moon("Moon-" + i + "-" + j + "-" + k, distanceMoon, temperatureMoon, hasAtmosphereMoon, hasOxygenMoon, hasWaterMoon, hasSolidSurfaceMoon);
+                        Moon moon = new Moon("Model.Moon-" + i + "-" + j + "-" + k, distanceMoon, temperatureMoon, hasAtmosphereMoon, hasOxygenMoon, hasWaterMoon, hasSolidSurfaceMoon);
                         planet.addMoon(moon);
                     }
 
@@ -326,8 +331,8 @@ public class GUI extends JFrame {
 
 
     private void createSpaceship() {
-        if(expedition == null) {
-            JOptionPane.showMessageDialog(this, "The expedition not started.", "Warning", JOptionPane.WARNING_MESSAGE);
+        if (expedition == null) {
+            JOptionPane.showMessageDialog(this, "The expedition has not started.", "Warning", JOptionPane.WARNING_MESSAGE);
         } else {
             if (spaceships == null) {
                 spaceships = new ArrayList<>();
@@ -342,11 +347,30 @@ public class GUI extends JFrame {
             expedition.addSpaceship(spaceship);
 
             JLabel shipLabel = new JLabel(shipId);
+            shipLabel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    showShipModules(spaceship);
+                }
+            });
             shipsPanel.add(shipLabel);
             shipsPanel.revalidate();
             shipsPanel.repaint();
         }
     }
+
+    private void showShipModules(Spaceship spaceship) {
+        StringBuilder moduleList = new StringBuilder();
+        moduleList.append("Modules of ").append(spaceship.getId()).append(":").append("\n");
+        moduleList.append("----------------------------").append("\n");
+
+        for (SpaceshipModule module : spaceship.installedModules) {
+            moduleList.append("- ").append(module.getDescription()).append("\n");
+        }
+
+        JOptionPane.showMessageDialog(this, moduleList.toString(), "Modules of " + spaceship.getId(), JOptionPane.INFORMATION_MESSAGE);
+    }
+
 
     private void startExpedition() {
         if (spaceships != null) {
@@ -376,7 +400,7 @@ public class GUI extends JFrame {
                         label.setForeground(Color.ORANGE);
                     } else if (spaceship.getStatus().contains("Started") || spaceship.getStatus().contains("Exploring")) {
                         label.setForeground(Color.GREEN);
-                    } else {
+                    } else if (spaceship.getStatus().contains("Broken")) {
                         label.setForeground(Color.RED);
                     }
                 }
@@ -397,7 +421,7 @@ public class GUI extends JFrame {
         // Очищаем лог
         logListModel.clear();
 
-        // Обновляем GUI
+        // Обновляем UI.GUI
         shipsPanel.revalidate();
         shipsPanel.repaint();
         systemsPanel.revalidate(); // Обновляем также панель систем
@@ -495,7 +519,7 @@ public class GUI extends JFrame {
                     if (selectedShip != null && selectedSystem != null) {
                         selectedShip.jumpToSystem(selectedSystem);
                         System.out.println(selectedShip.getTargetSystem());
-                        appendLog("Spaceship " + selectedShipId + " jumped to " + selectedSystemName);
+                        appendLog("Model.Spaceship " + selectedShipId + " jumped to " + selectedSystemName);
                     }
                 }
                 dialog.dispose();
@@ -509,14 +533,14 @@ public class GUI extends JFrame {
     }
 
     private void openSpaceshipSettingsDialog() {
-        JDialog dialog = new JDialog(this, "Spaceship Settings", true);
+        JDialog dialog = new JDialog(this, "Model.Spaceship Settings", true);
         dialog.setLayout(new BorderLayout());
         dialog.setSize(400, 300);
         dialog.setLocationRelativeTo(this);
 
         JPanel panel = new JPanel(new GridLayout(4, 2));
         JButton returnToBaseButton = new JButton("Return to Base");
-        JButton landOnPlanetButton = new JButton("Land on Planet");
+        JButton landOnPlanetButton = new JButton("Land on Model.Planet");
         JButton takeOffButton = new JButton("Take Off");
         JComboBox<String> shipComboBox = new JComboBox<>();
 

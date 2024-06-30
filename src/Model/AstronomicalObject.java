@@ -1,8 +1,10 @@
+package Model;
+
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-abstract class AstronomicalObject {
+public abstract class AstronomicalObject {
     protected String name;
     protected double distanceFromCenter; // в а.е.
 

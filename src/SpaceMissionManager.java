@@ -1,3 +1,7 @@
+import Model.Expedition;
+import Model.Spaceship;
+import UI.GUI;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -17,7 +21,7 @@ public class SpaceMissionManager {
         this.lostShips = 0;
 
         for (int i = 1; i <= numSpaceships; i++) {
-            Spaceship spaceship = new Spaceship("Spaceship-" + i, jumpCapacity, fuel, maxModulesPerShip, expedition, gui);
+            Spaceship spaceship = new Spaceship("Model.Spaceship-" + i, jumpCapacity, fuel, maxModulesPerShip, expedition, gui);
             spaceships.add(spaceship);
         }
     }
@@ -64,8 +68,8 @@ public class SpaceMissionManager {
     }
 
     public static void main(String[] args) {
-        Expedition expedition = new Expedition(); // Assuming Expedition class is defined
-        GUI gui = new GUI(); // Assuming GUI class is defined
+        Expedition expedition = new Expedition(); // Assuming Model.Expedition class is defined
+        GUI gui = new GUI(); // Assuming UI.GUI class is defined
 
         SpaceMissionManager missionManager = new SpaceMissionManager(5, 10, 100, 5, expedition, gui);
         missionManager.startMission();

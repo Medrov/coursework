@@ -1,10 +1,12 @@
+package Model;
+
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-class Planet extends AstronomicalObject {
+public class Planet extends AstronomicalObject {
     private double surfaceTemperature;
     private boolean hasAtmosphere;
     private boolean hasOxygen;

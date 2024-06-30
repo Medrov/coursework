@@ -1,8 +1,10 @@
+package Model;
+
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-class Moon extends AstronomicalObject {
+public class Moon extends AstronomicalObject {
     private Planet planet;
     private double surfaceTemperature;
     private boolean hasAtmosphere;
