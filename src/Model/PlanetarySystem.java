@@ -54,7 +54,7 @@ public class PlanetarySystem {
 
             // Генерируем 15 планетарных систем
             for (int i = 1; i <= 15; i++) {
-                PlanetarySystem system = new PlanetarySystem("System-" + i, ThreadLocalRandom.current().nextDouble(10, 100));
+                PlanetarySystem system = new PlanetarySystem("System-" + i, ThreadLocalRandom.current().nextDouble(10, 80));
                 Star centerStar = new Star("Star-" + i, 0);
                 system.addObject(centerStar);
 

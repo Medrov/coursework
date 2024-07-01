@@ -452,7 +452,6 @@ public class GUI extends JFrame {
                     if (selectedShip != null && selectedSystem != null) {
                         if(selectedShip.remainingJumps > 0){
                             selectedShip.jumpToSystem(selectedSystem);
-                            selectedShip.currentSystem = selectedShip.targetSystem;
                             updateShipStatus(selectedShip);
                         } else {
                             JOptionPane.showMessageDialog(this, "You can't jump with zero jump.", "Warning", JOptionPane.WARNING_MESSAGE);
@@ -497,7 +496,7 @@ public class GUI extends JFrame {
             if (selectedShipId != null) {
                 Spaceship selectedShip = findShipById(selectedShipId, spaceships);
                 if (selectedShip != null)   {
-                    if(selectedShip.targetSystem != null) {
+                    if(selectedShip.targetSystem == null) {
                         selectedShip.returnToBase();
                         updateShipStatus(selectedShip);
                     } else {
@@ -513,7 +512,7 @@ public class GUI extends JFrame {
             if (selectedShipId != null) {
                 Spaceship selectedShip = findShipById(selectedShipId, spaceships);
                 if (selectedShip != null) {
-                    if(selectedShip.targetSystem != null) {
+                    if(selectedShip.targetSystem == null) {
                         selectedShip.landOnPlanet(selectedShip);
                     } else {
                         JOptionPane.showMessageDialog(this, "You can't use spaceship settings on base.", "Warning", JOptionPane.WARNING_MESSAGE);
@@ -528,7 +527,7 @@ public class GUI extends JFrame {
             if (selectedShipId != null) {
                 Spaceship selectedShip = findShipById(selectedShipId, spaceships);
                 if (selectedShip != null) {
-                    if(selectedShip.targetSystem != null) {
+                    if(selectedShip.targetSystem == null) {
                         selectedShip.takeOff();
                     } else {
                         JOptionPane.showMessageDialog(this, "You can't use spaceship settings on base.", "Warning", JOptionPane.WARNING_MESSAGE);
@@ -592,38 +591,42 @@ public class GUI extends JFrame {
     }
 
     private void finishExpedition() {
-        int lostShips = 0;
-        int returnedShips = 0;
-        boolean colonyBuilt = false;
+       if(spaceships == null) {
+           JOptionPane.showMessageDialog(this, "You don't finish expedition program", "Program Conclusion", JOptionPane.WARNING_MESSAGE);
+       } else {
+           int lostShips = 0;
+           int returnedShips = 0;
+           boolean colonyBuilt = false;
 
-        for (Spaceship spaceship : spaceships) {
-            if (spaceship.isColonized) {
-                colonyBuilt = true;
-            } else if (spaceship.isReturned) {
-                returnedShips++;
-            } else {
-                lostShips++;
-            }
-        }
+           for (Spaceship spaceship : spaceships) {
+               if (spaceship.isColonized) {
+                   colonyBuilt = true;
+               } else if (spaceship.isReturned) {
+                   returnedShips++;
+               } else {
+                   lostShips++;
+               }
+           }
 
-        String message;
-        if (colonyBuilt) {
-            if (lostShips == 0) {
-                message = "The space program was excellent: a colony was built, and all other ships returned to base.";
-            } else {
-                message = "The space program was successful: a colony was built.";
-            }
-        } else {
-            if (lostShips > 3) {
-                message = "The space program failed: more than 3 ships were lost, and no colony was built. The director is fired.";
-            } else if (returnedShips > 3) {
-                message = "The space program was satisfactory: more than 3 ships returned, but no colony was built.";
-            } else {
-                message = "The space program was unsatisfactory.";
-            }
-        }
+           String message;
+           if (colonyBuilt) {
+               if (lostShips == 0) {
+                   message = "The space program was excellent: a colony was built, and all other ships returned to base.";
+               } else {
+                   message = "The space program was successful: a colony was built.";
+               }
+           } else {
+               if (lostShips > 3) {
+                   message = "The space program failed: more than 3 ships were lost, and no colony was built. The director is fired.";
+               } else if (returnedShips > 3) {
+                   message = "The space program was satisfactory: more than 3 ships returned, but no colony was built.";
+               } else {
+                   message = "The space program was unsatisfactory.";
+               }
+           }
 
-        JOptionPane.showMessageDialog(this, message, "Program Conclusion", JOptionPane.INFORMATION_MESSAGE);
+           JOptionPane.showMessageDialog(this, message, "Program Conclusion", JOptionPane.INFORMATION_MESSAGE);
+       }
     }
     public static void main(String[] args) {
         SwingUtilities.invokeLater(GUI::new);
