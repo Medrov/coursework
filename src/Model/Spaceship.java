@@ -68,8 +68,6 @@ public class Spaceship implements Runnable {
             // Jump to a new system
             if (remainingJumps > 0 && isFunctional) {
                 remainingJumps--;
-                logUI("Spaceship " + id + " jumped to " + targetSystem.getName());
-                logUI("Jumping to " + targetSystem.getName());
                 exploreSystem();
                 if (isColonized) {
                     return;
@@ -160,9 +158,16 @@ public class Spaceship implements Runnable {
     public void returnToBase() {
         this.isReturned = true;
         remainingJumps--;
+        targetSystem = null;
+        fuel = 50;
+        for (SpaceshipModule module : installedModules) {
+            if (module instanceof FuelTankModule) {
+                this.fuel += ((FuelTankModule) module).getFuelCapacity();
+            }
+        }
+        currentAction = "Returned to base";
         logUI("Spaceship " + id + " returned to base.");
         logUI("Returned to base");
-        currentAction = "Returned to base";
     }
 
     public void landOnPlanet(Spaceship spaceship) {
@@ -199,7 +204,6 @@ public class Spaceship implements Runnable {
     public void jumpToSystem(PlanetarySystem targetSystem) {
         if (remainingJumps > 0 && isFunctional) {
             currentSystem = targetSystem;
-            remainingJumps--;
             currentAction = "Jumped to " + targetSystem.getName();
             logUI("Spaceship " + id + " jumped to " + targetSystem.getName());
             logUI("Jumped to " + targetSystem.getName());

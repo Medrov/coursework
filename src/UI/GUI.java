@@ -450,10 +450,13 @@ public class GUI extends JFrame {
                     }
 
                     if (selectedShip != null && selectedSystem != null) {
-                        selectedShip.jumpToSystem(selectedSystem);
-                        selectedShip.currentSystem = selectedShip.targetSystem;
-                        appendLog("Spaceship " + selectedShipId + "Jumped to " + selectedSystemName);
-                        updateShipStatus(selectedShip);
+                        if(selectedShip.remainingJumps > 0){
+                            selectedShip.jumpToSystem(selectedSystem);
+                            selectedShip.currentSystem = selectedShip.targetSystem;
+                            updateShipStatus(selectedShip);
+                        } else {
+                            JOptionPane.showMessageDialog(this, "You can't jump with zero jump.", "Warning", JOptionPane.WARNING_MESSAGE);
+                        }
                     }
                 }
                 dialog.dispose();
@@ -493,9 +496,13 @@ public class GUI extends JFrame {
             String selectedShipId = (String) shipComboBox.getSelectedItem();
             if (selectedShipId != null) {
                 Spaceship selectedShip = findShipById(selectedShipId, spaceships);
-                if (selectedShip != null) {
-                    selectedShip.returnToBase();
-                    updateShipStatus(selectedShip);
+                if (selectedShip != null)   {
+                    if(selectedShip.targetSystem != null) {
+                        selectedShip.returnToBase();
+                        updateShipStatus(selectedShip);
+                    } else {
+                        JOptionPane.showMessageDialog(this, "You can't use spaceship settings on base.", "Warning", JOptionPane.WARNING_MESSAGE);
+                    }
                 }
             }
             dialog.dispose();
@@ -506,7 +513,11 @@ public class GUI extends JFrame {
             if (selectedShipId != null) {
                 Spaceship selectedShip = findShipById(selectedShipId, spaceships);
                 if (selectedShip != null) {
-                    selectedShip.landOnPlanet(selectedShip);
+                    if(selectedShip.targetSystem != null) {
+                        selectedShip.landOnPlanet(selectedShip);
+                    } else {
+                        JOptionPane.showMessageDialog(this, "You can't use spaceship settings on base.", "Warning", JOptionPane.WARNING_MESSAGE);
+                    }
                 }
             }
             dialog.dispose();
@@ -517,7 +528,11 @@ public class GUI extends JFrame {
             if (selectedShipId != null) {
                 Spaceship selectedShip = findShipById(selectedShipId, spaceships);
                 if (selectedShip != null) {
-                    selectedShip.takeOff();
+                    if(selectedShip.targetSystem != null) {
+                        selectedShip.takeOff();
+                    } else {
+                        JOptionPane.showMessageDialog(this, "You can't use spaceship settings on base.", "Warning", JOptionPane.WARNING_MESSAGE);
+                    }
                 }
             }
             dialog.dispose();
@@ -541,7 +556,7 @@ public class GUI extends JFrame {
                         label.setForeground(Color.CYAN);
                     } else if (spaceship.isColonized) {
                         label.setForeground(Color.ORANGE);
-                    } else if (spaceship.getStatus().contains("Started") || spaceship.getStatus().contains("Jumped ")) {
+                    } else if (spaceship.getStatus().contains("Started") || spaceship.getStatus().contains("Jumped")) {
                         label.setForeground(Color.GREEN);
                     } else {
                         label.setForeground(Color.RED);
